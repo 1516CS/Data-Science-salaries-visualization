@@ -1,9 +1,12 @@
 
 <h3> Project description </h3>
 
-A data visualization project exploring the dynamic world of data science salaries using the "Latest Data Science Salaries" dataset (2020–2023) from Kaggle. This project leverages powerful visual analysis to explore variations in salary across job titles, expertise levels, geographic regions, and years. Interactive dashboards, along with compelling static visualizations, allow readers to understand key trends and make informed decisions on their career path in the data science field.
+<p> A data visualization project exploring the dynamic world of data science salaries using the "Latest Data Science Salaries" dataset (2020–2023) from Kaggle. This project leverages powerful visual analysis to explore variations in salary across job titles, expertise levels, geographic regions, and years. Interactive dashboards, along with compelling static visualizations, allow readers to understand key trends and make informed decisions on their career path in the data science field. </p>
 
-## Data Sources
+![Dashboard Image]( https://github.com/1516CS/Data-Science-salaries-visualization/blob/main/Dashboard.png)
+
+
+## Data Source
 
 | **Field**            | **Details**                                                   |
 |----------------------|---------------------------------------------------------------|
@@ -16,7 +19,6 @@ A data visualization project exploring the dynamic world of data science salarie
 | **Target Audience**   | Data professionals, researchers, organizations, career seekers|
 | **Utilization**       | Career guidance, compensation strategy benchmarking, research on data science job market dynamics |
 | **Kaggle Link**       |  https://www.kaggle.com/datasets/iamsouravbanerjee/data-science-salaries-2023 |
-
 
 
 
