@@ -1,0 +1,590 @@
+---
+output: 
+  html_document: 
+    fig_caption: yes
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+# Install and load necessary libraries  
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(viridis)
+library(RColorBrewer)
+library(viridis)
+```
+
+```{r}
+
+# Read the dataset
+df <- read.csv("Latest_Data_Science_Salaries.csv")
+
+# Convert salary to numeric values
+df$Salary <- as.numeric(df$Salary)
+```
+
+```{r}
+
+
+```
+
+```{r}
+# Display the structure of the dataframe
+str(df)
+
+```
+
+```{r}
+# Group by job title, filter titles with more than 20 occurrences, and calculate median salary
+job_title_median <- df %>%
+  group_by(Job.Title) %>%
+  filter(n() > 20) %>%
+  summarise(median_sal = median(Salary.in.USD))
+
+# Define a custom color palette
+custom_palette <- brewer.pal(12, "Blues")  # Change "Blues" to your preferred color palette
+
+# Reorder "Job Title" based on median salary in descending order
+job_title_median$Job.Title <- reorder(job_title_median$Job.Title, job_title_median$median_sal)
+
+# Create a horizontal grouped bar chart with custom color based on median salary
+ggplot(data = job_title_median, aes(x = median_sal, y = Job.Title, fill = median_sal)) +
+  geom_col() +
+  scale_fill_gradientn(colors = custom_palette) +  # Use custom color palette
+  labs(title = "Most common Data Science Job Titles with average Salaries",
+       x = "Average Salary in US Dollars ",
+       y = "Job Title") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_x_continuous(labels = scales::dollar_format())
+
+```
+
+```{r}
+# Group by job title, filter titles with more than 20 occurrences, and calculate median salary
+job_title_summary <- df %>%
+  group_by(Job.Title) %>%
+  filter(n() > 20) %>%
+  summarise(median_sal = median(Salary.in.USD),
+            frequency = n())
+
+# Define a custom color palette
+custom_palette <- brewer.pal(5, "Blues")  # Change "Blues" to your preferred color palette
+
+# Reorder "Job Title" based on median salary in descending order
+job_title_summary$Job.Title <- reorder(job_title_summary$Job.Title, job_title_summary$median_sal)
+
+# Create a horizontal grouped bar chart with custom color based on median salary and occurrence
+ggplot(data = job_title_summary, aes(x = median_sal, y = Job.Title, fill = frequency)) +
+  geom_col() +
+  scale_fill_gradientn(colors = custom_palette, guide = "legend") +  # Use custom color palette
+  labs(title = "Most Common Data Science Job Titles with Average Salaries",
+       x = "Average Salary in US Dollars",
+       y = "Job Title") +
+  theme_minimal() +
+  scale_x_continuous(labels = scales::dollar_format()) +
+  theme(legend.position = "right")  # Move the legend to the right for better visibility
+
+```
+
+
+```{r}
+ 
+# Group by job title and calculate median salary
+job_title_median <- df %>%
+  group_by(Job.Title) %>%
+  summarise(median_sal = median(Salary.in.USD))
+
+# Reorder "Job Title" based on median salary in descending order
+job_title_median <- job_title_median %>%
+  arrange(desc(median_sal))
+
+# Select the top 20 job titles with the highest median salaries
+top_20_job_title_median <- job_title_median %>% top_n(20, median_sal)
+
+# Reorder the levels of "Job Title" factor
+top_20_job_title_median$Job.Title <- factor(top_20_job_title_median$Job.Title, 
+                                            levels = rev(top_20_job_title_median$Job.Title))
+
+# Create a horizontal grouped bar chart with a single color for all bars
+ggplot(data = top_20_job_title_median, aes(x = median_sal, y = Job.Title)) +
+  geom_col(fill = "steelblue3") +  
+  labs(title = "Top 20 Data Science Job Titles with Highest Median Salaries",
+       x = "Average Salary in US Dollars ",
+       y = "Job Title") +
+  theme_minimal() +
+  scale_x_continuous(labels = scales::dollar_format())  # Format x-axis labels as dollars
+
+
+
+```
+
+
+```{r}
+ggplot(df, aes(x = factor(Employment.Type))) +
+  geom_bar(fill = c("#1f78b4", "#33a02c", "#e31a1c", "#ff7f00")) +  # Use your preferred color codes
+  labs(title = "Distribution of Employment Types in Data Science Professionals",
+       x = "Employment Type",
+       y = "Count of employees") +
+  theme_minimal()
+
+
+```
+
+```{r}
+ ggplot(df, aes(x = factor(Employment.Type), fill = factor(Experience.Level))) +
+  geom_bar(color = "black") +
+  labs(title = "Distribution of Employment Types by Experience Level",
+       x = "Employment Type",
+       y = "Count") +
+  scale_fill_brewer(palette = "Set3")
+
+```
+
+```{r}
+ggplot(df, aes(x = factor(Employment.Type))) +
+  geom_bar(color = "black") +
+  labs(title = "Distribution of Employment Types",
+       x = "Employment Type",
+       y = "Count") +
+  facet_wrap(~ Experience.Level, scales = "free_y")
+
+```
+
+```{r}
+ggplot(df, aes(x = factor(Experience.Level), fill = factor(Employment.Type))) +
+  geom_bar(position = "stack", color = "black") +
+  labs(title = "Stacked Distribution of Employment Types by Experience Level",
+       x = "Experience Level",
+       y = "Count") +
+  scale_fill_brewer(palette = "dark2")
+
+```
+
+```{r}
+ggplot(df, aes(x = factor(Company.Size), fill = factor(Experience.Level))) +
+  geom_bar(position = "fill", color = "black") +
+  labs(title = "Distribution of Experience levels in different company size",
+       x = "Company Size",
+       y = "Proportion",
+       fill = "Experience Level") +  # Set legend title
+  scale_fill_brewer(palette = "RdBu") +
+  scale_y_continuous(labels = scales::percent_format(scale = 100), breaks = seq(0, 1, by = 0.2)) +
+  theme(
+    plot.title = element_text(hjust = 0.5)  # Center the plot title
+  )
+```
+
+```{r}
+
+# Group by location, experience level, and calculate average salary
+average_salaries <- aggregate(Salary.in.USD ~ `Company.Location` + `Experience.Level`, data = df, median)
+
+# Sort the locations by average salary in descending order
+top_locations <- head(average_salaries[order(-average_salaries$Salary.in.USD), ], 20)
+
+# Create a horizontal bar chart with different colors for each experience level
+ggplot(top_locations, aes(x = reorder(`Company.Location`, -Salary.in.USD), y = Salary.in.USD, fill = `Experience.Level`)) +
+  geom_col(position = "dodge") +
+  labs(title = "Locations with Highest Average Data Science Salaries",
+       x = "Average Salary (USD)",
+       y = "Company Location") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+# Create a grouped bar chart for salary distribution by employment type
+ggplot(df, aes(x = factor(`Employment.Type`), y = `Salary.in.USD`, fill = factor(`Experience.Level`))) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 1) +
+  scale_fill_brewer(palette = "RdBu") +  # Use a consistent color palette for experience levels
+  labs(title = "            Salary Distribution by Employment Type",
+       x = "Employment Type",
+       y = "Salary in USD",
+       fill = "Experience Level") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1),
+        panel.grid.major = element_line(color = "white", size = 0.5),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "#f0f0f0")) +
+  scale_y_continuous(breaks = seq(0, max(df$Salary.in.USD), by = 50000))  # Adjust the breaks as needed
+
+
+```
+
+```{r}
+# Create a grouped bar chart for salary distribution by employment type
+ggplot(df, aes(x = factor(`Experience.Level`), y = `Salary.in.USD`, fill = factor(`Employment.Type`))) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 1) +
+  scale_fill_brewer(palette = "RdBu") +  # Use a consistent color palette for experience levels
+  labs(title = "            Salary Distribution by Employment Type",
+       x = "Experience Level",
+       y = "Salary in USD",
+       fill = "Employment Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1),
+        panel.grid.major = element_line(color = "white", size = 0.5),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "#f0f0f0")) +
+  scale_y_continuous(breaks = seq(0, max(df$Salary.in.USD), by = 50000))  # Adjust the breaks as needed
+```
+
+```{r}
+
+# Calculate average salary by expertise level
+average_salary_by_expertise <- aggregate(Salary.in.USD ~ Expertise.Level, data = df, mean)
+
+# Create a boxplot for salary distribution by expertise level
+ggplot(df, aes(x = factor(Expertise.Level), y = Salary.in.USD)) +
+  geom_boxplot(fill = "skyblue", color = "steelblue") +
+  geom_text(data = average_salary_by_expertise, aes(x = factor(Expertise.Level), y = Salary.in.USD, label = sprintf("%.0f", Salary.in.USD)),
+            vjust = -0.7, color = "red", size = 3) +  # Annotate with average salary
+  labs(title = "Salary Distribution by Expertise Level",
+       x = "Expertise Level",
+       y = "Salary in USD") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 0, hjust = 1)) +
+  scale_y_continuous(labels = scales::comma_format(scale = 1))  # Adjust y-axis labels
+```
+
+```{r}
+
+# Create an area chart for salary trends over the years by experience level
+ggplot(df, aes(x = Year, y = Salary.in.USD, fill = Experience.Level)) +
+  geom_area() +
+  labs(title = "Data Science Salary Trends by Experience Level (2020-2023)",
+       x = "Year",
+       y = "Salary in USD") +
+  scale_fill_brewer(palette = "Set1") +  # You can choose a different color palette if needed
+  theme_minimal()
+
+```
+
+```{r}
+# Calculate median salary by experience level and year
+median_salary_by_year_experience <- aggregate(Salary.in.USD ~ Year + Experience.Level, data = df, median)
+
+# Create an area chart for median salary trends over the years by experience level
+ggplot(median_salary_by_year_experience, aes(x = Year, y = Salary.in.USD, color = Experience.Level)) +
+  geom_line(aes(group = Experience.Level), size = 0.8) +
+  geom_point(size = 3) +
+  labs(title = "Median Data Science Salary Trends by Experience Level (2020-2023)",
+       x = "Year",
+       y = "Median Salary in USD") +
+  scale_color_brewer(palette = "Set1") +  # You can choose a different color palette if needed
+  theme_minimal() +
+  scale_y_continuous(breaks = seq(0, 200000, by = 20000))
+```
+
+```{r}
+# Calculate salary range by job title
+salary_range_by_title <- aggregate(Salary.in.USD ~ Job.Title, data = df, function(x) diff(range(x)))
+
+# Select the top 8-10 job titles with the highest salary range
+top_range_titles <- head(salary_range_by_title[order(-salary_range_by_title$Salary.in.USD), ], 7)
+
+# Calculate median salary by job title and year for the filtered data
+median_salary_by_year_range <- aggregate(Salary.in.USD ~ Year + Job.Title, data = df[df$Job.Title %in% top_range_titles$Job.Title, ], median)
+
+# Create a line chart for median salary trends over the years by job title
+ggplot(median_salary_by_year_range, aes(x = Year, y = Salary.in.USD, color = Job.Title)) +
+  geom_line(aes(group = Job.Title), size = 1.5) +
+  scale_color_brewer(palette = "Dark2") +  # Use a color scale for better distinction
+  labs(title = "Median Data Science Salary Trends for Job Titles with Highest salary Variation in 2020-2023",
+       x = "Year",
+       y = "Median Salary in USD") +
+  theme_minimal() +
+  scale_y_continuous(labels = scales::comma_format(scale = 0.001, suffix = "k"))  # Adjust y-axis labels
+
+
+```
+
+```{r}
+# Create a boxplot or violin plot for the relationship between company size and salaries
+ggplot(df, aes(x = factor(Company.Size), y = Salary.in.USD)) +
+  geom_violin(fill = "skyblue", color = "steelblue", alpha = 0.7) +
+  geom_boxplot(width = 0.2, fill = "lightgray", color = "black", outlier.shape = NA) +  # Add boxplot for reference
+  labs(title = "Relationship Between Company Size and Data Science Salaries",
+       x = "Company Size",
+       y = "Salary in USD") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+```{r}
+#Job Salaries destribution
+ggplot(df, aes(x = Salary.in.USD)) +
+  geom_histogram(binwidth = 10000, fill = "steelblue2", color = "black", alpha = 0.7) +
+  geom_density(color = "red") +  # Add kernel density estimation
+  labs(title = " Distribution of Data Science Job Salaries",
+       x = "Salary in USD",
+       y = "Frequency") +
+  theme_minimal() +
+  theme(axis.text.x = element_text( hjust = 1)) +
+  scale_x_continuous(labels = scales::comma_format(scale = 1))  # Display x-axis labels in normal numbers
+
+```
+
+```{r}
+
+# Calculate the 99th percentile of salaries
+salary_threshold <- quantile(df$Salary.in.USD, 0.99)
+
+# Create a boxplot with jittered points
+ggplot(df, aes(x = as.factor(Year), y = Salary.in.USD)) +
+  geom_boxplot(outlier.shape = NA, fill = "steelblue", color = "blue3") +
+  geom_jitter(data = df[df$Salary.in.USD > salary_threshold, ],
+              position = position_jitter(0.2), color = "coral1", alpha = 1) +  # Add jittered points for extreme outliers
+  labs(title = "Salary Distribution and Extreme Outliers in Data Science Jobs (2020-2023)",
+       x = "Year",
+       y = "Salary in USD") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(labels = scales::comma_format(scale = 1))
+
+```
+
+```{r}
+# Filter the data to include only the most common 8 job titles
+common_job_titles <- df %>%
+  group_by(Job.Title) %>%
+  summarise(count = n()) %>%
+  arrange(desc(count)) %>%
+  head(8) %>%
+  pull(Job.Title)
+
+df_filtered <- df %>%
+  filter(Job.Title %in% common_job_titles)
+
+# Create a box plot with the filtered data
+ggplot(df_filtered, aes(x = Job.Title, y = Salary.in.USD, fill = Experience.Level)) +
+  geom_boxplot() +
+  labs(title = "Salary Distribution by Job Title and Experience Level",
+       x = "Job Title",
+       y = "Salary in USD") +
+  scale_y_continuous(labels = scales::comma) +  # Format y-axis labels as commas
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+ 
+
+```{r}
+# Create a butterfly plot with the top 10 and lowest 10 countries by median salary
+top_countries <- df %>%
+  group_by(Company.Location) %>%
+  summarize(Median_Salary = median(Salary.in.USD)) %>%
+  arrange(desc(Median_Salary)) %>%
+  head(10)
+
+bottom_countries <- df %>%
+  group_by(Company.Location) %>%
+  summarize(Median_Salary = median(Salary.in.USD)) %>%
+  arrange(Median_Salary) %>%
+  head(10)
+
+all_countries <- rbind(mutate(top_countries, side = "Top 10"),
+                      mutate(bottom_countries, side = "Bottom 10"))
+
+# Assign colors for top and bottom countries
+colors <- c("Top 10" = "steelblue", "Bottom 10" = "coral")
+
+ggplot(all_countries, aes(x = Median_Salary, y = reorder(Company.Location, Median_Salary), fill = side)) +
+  geom_col() +
+  labs(title = "Top and Bottom 10 Countries by Median Salary",
+       x = "Median Salary in USD",
+       y = "Country") +
+  scale_fill_manual(values = colors, name = "Country Set") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  facet_grid(side ~ ., scales = "free_y", space = "free_y") +
+  theme(strip.text = element_blank())
+```
+
+```{r}
+# Create a butterfly plot with the top 10 and lowest 10 countries by median salary
+top_countries <- df %>%
+  group_by(Company.Location) %>%
+  summarize(Median_Salary = median(Salary.in.USD)) %>%
+  arrange(desc(Median_Salary)) %>%
+  head(10)
+
+bottom_countries <- df %>%
+  group_by(Company.Location) %>%
+  summarize(Median_Salary = median(Salary.in.USD)) %>%
+  arrange(Median_Salary) %>%
+  head(10)
+
+all_countries <- rbind(mutate(top_countries, side = "Top 10"),
+                      mutate(bottom_countries, side = "Bottom 10"))
+
+# Assign colors for top and bottom countries
+colors <- c("Top 10" = "steelblue", "Bottom 10" = "coral")
+# Create a violin plot with individual data points
+ggplot(df, aes(x = Company.Location, y = Salary.in.USD, fill = Company_Location)) +
+  geom_violin(trim = FALSE) +
+  geom_point(position = position_jitter(width = 0.2), alpha = 0.5) +
+  labs(title = "Distribution of Salaries by Country",
+       x = "Country",
+       y = "Salary in USD") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+# Create a KDE plot for Salary distribution by Expertise Level
+ggplot(df, aes(x = `Salary.in.USD`, fill = `Expertise.Level`)) +
+  geom_density(alpha = 0.5, aes(color = `Expertise.Level`)) +
+  scale_x_continuous(labels = comma_format()) +  # Format x-axis labels as commas
+  scale_y_continuous(labels = scientific_format()) +  # Format y-axis labels in scientific notation
+  labs(title = "KDE Plot of Salary by Expertise Level",
+       x = "Salary in USD",
+       y = "Density") +
+  theme_minimal()
+```
+
+```{r}
+# Create a violin plot for Salary distribution by Company Size with descriptive stats
+ggplot(df, aes(x = `Company.Size`, y = `Salary.in.USD`, fill = `Company.Size`)) +
+  geom_violin(trim = FALSE, alpha = 0.7) +
+  geom_boxplot(width = 0.08, fill = "lightgray", color = "black", outlier.shape = NA) +  # Add boxplot for reference
+  labs(title = "Salary Distribution by Company Size",
+       x = "Company Size",
+       y = "Salary in US Dollars ($)") +
+  theme_minimal() + 
+  scale_y_continuous(labels = scales::comma_format(scale = 1)) +
+  theme(legend.position = "none",
+        plot.title = element_text(hjust = 0.5)) +
+  scale_fill_viridis_d(option = "plasma")
+```
+
+```{r}
+# Create a box plot for Salary with a specific color and normal y-axis labels
+ggplot(df, aes(x = Salary.in.USD)) +
+  geom_boxplot(color = "blue", fill = "skyblue3", alpha = 0.7) +
+  labs(title = "Salary Distribution by Job Title",
+       x = "Salary") +
+  theme_minimal() +
+  scale_x_continuous(labels = scales::dollar_format(scale = 1, prefix = "$"))  # Format y-axis labels as dollars
+
+```
+
+```{r}
+
+# Create a continuous time series line plot
+ggplot(df, aes(x = as.numeric(Year), y = `Salary.in.USD`, group = 1)) +
+  geom_line() +
+  labs(title = "Data Science Salary Time Series",
+       x = "Year",
+       y = "Average Salary in USD") +
+  theme_minimal()
+```
+
+```{r}
+# Identify the top job title and expertise level in each year
+top_jobs <- df %>%
+  group_by(Year) %>%
+  top_n(1, Salary.in.USD)
+
+# Filter outliers
+outliers <- df %>%
+  filter(Salary.in.USD > quantile(Salary.in.USD, 0.99))
+
+# Create a boxplot with jittered points for outliers
+ggplot(df, aes(x = as.factor(Year), y = Salary.in.USD, fill = as.factor(Year))) +
+  geom_boxplot(outlier.shape = NA, color = "black") +
+  geom_jitter(data = outliers, color = "black", position = position_jitter(width = 0.2), alpha = 1) +
+  geom_text(data = top_jobs,
+            aes(label = Job.Title, y = Salary.in.USD + 5000),
+            position = position_jitter(width = 0.2),
+            vjust = -0.3, hjust = 0.1, color = "brown", size = 4) +  # Annotate top job title in each year
+  geom_text(data = top_jobs,
+            aes(label = Expertise.Level, y = Salary.in.USD - 5000),
+            position = position_jitter(width = 0.2),
+            vjust = 0.5,  color = "blue4", size = 3) +  # Annotate expertise level in each year
+  labs(title = "          Extreme Outliers in Data Science Jobs (2020-2023)",
+       x = "Year",
+       y = "Salary in US Dollars ($)") +
+  scale_fill_brewer(palette = "Set1") +  # Set a color palette for boxplots
+  theme_minimal() +
+  theme(axis.text.x = element_text()) +
+  scale_y_continuous(labels = scales::comma_format(scale = 1)) +
+  guides(fill = FALSE)  # Remove the legend for fill
+
+```
+
+```{r}
+# Find the most frequent location
+most_frequent_location <- names(which.max(table(df$Company.Location)))
+
+# Find the location with the highest salary
+highest_salary_location <- df$Company.Location[which.max(median(df$Salary.in.USD))]
+
+# Overall summary of Company.Location
+location_summary <- summary(df$Company.Location)
+
+# Print the results
+cat("Most Frequent Location:", most_frequent_location, "\n")
+cat("Highest Salary Location:", highest_salary_location, "\n")
+cat("Overall Summary of Company Location:\n", location_summary, "\n")
+```
+
+```{r}
+# Calculate median salary by location
+median_salary_by_location <- aggregate(Salary.in.USD ~ Company.Location, data = df, median)
+
+# Find the location with the highest median salary
+highest_median_salary_location <- median_salary_by_location$Company.Location[which.max(median_salary_by_location$Salary.in.USD)]
+
+# Print the result
+cat("Location with Highest Median Salary:", highest_median_salary_location, "\n")
+
+```
+
+```{r}
+# Count of jobs for each location
+location_counts <- table(df$Company.Location)
+
+# Print the result
+print(location_counts)
+
+```
+
+```{r}
+# Calculate average salary by location
+average_salary_by_location <- tapply(df$Salary.in.USD, df$Company.Location, mean)
+
+# Create a data frame
+average_salary_df <- data.frame(Location = names(average_salary_by_location), AverageSalary = average_salary_by_location)
+
+# Order by average salary in descending order
+top_10_locations <- head(average_salary_df[order(-average_salary_df$AverageSalary), ], 10)
+
+# Print the result
+print(top_10_locations)
+
+```
+
+
+```{r}# Create a KDE plot for Salary distribution by Expertise Level}
+ggplot(df, aes(x = `Salary.in.USD`, fill = `Expertise.Level`)) +
+  geom_bar(alpha = 1, aes(color = `Expertise.Level`)) +
+  scale_x_continuous(labels = comma_format()) +  # Format x-axis labels as commas
+  scale_y_continuous(labels = scientific_format()) +  # Format y-axis labels in scientific notation
+  labs(title = "KDE Plot of Salary by Expertise Level",
+       x = "Salary in USD",
+       y = "Density") +
+  theme_minimal()
+
+```
+
+```{r}
+num_unique_job_titles <- length(unique(df$Job.Title))
+num_unique_job_titles 
+```
